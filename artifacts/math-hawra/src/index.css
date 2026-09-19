@@ -1,0 +1,49 @@
+@import "@workspace/math-hawra-ds/styles.css";
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-gradient-to-br from-pink-100 via-pink-50 to-yellow-50 text-foreground;
+    direction: rtl;
+    min-height: 100vh;
+  }
+}
+
+.star {
+  position: fixed;
+  background-color: white;
+  border-radius: 50%;
+  z-index: 0;
+  animation: twinkle 3s infinite alternate, float 10s infinite linear;
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.3; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0) translateX(0); }
+  33% { transform: translateY(-10px) translateX(10px); }
+  66% { transform: translateY(10px) translateX(-10px); }
+  100% { transform: translateY(0) translateX(0); }
+}
+
+@keyframes timer-attention {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+.timer-attention {
+  animation: timer-attention 0.8s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timer-attention {
+    animation: none;
+  }
+}

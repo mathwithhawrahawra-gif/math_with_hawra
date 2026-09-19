@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://cloud-teacher-hub--taheramohammed3.replit.app/sitemap.xml

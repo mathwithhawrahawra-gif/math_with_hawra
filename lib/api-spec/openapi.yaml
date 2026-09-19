@@ -1,0 +1,677 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Math With Hawra API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Teacher authentication
+  - name: quizzes
+    description: Quiz management
+  - name: submissions
+    description: Student submissions
+  - name: dashboard
+    description: Dashboard statistics
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: registerTeacher
+      tags: [auth]
+      summary: Register a new teacher
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeacherRegisterInput"
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Teacher"
+        "409":
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: loginTeacher
+      tags: [auth]
+      summary: Login teacher
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeacherLoginInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Teacher"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current teacher
+      responses:
+        "200":
+          description: Current teacher
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Teacher"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logoutTeacher
+      tags: [auth]
+      summary: Logout teacher
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /quizzes:
+    get:
+      operationId: listQuizzes
+      tags: [quizzes]
+      summary: List teacher quizzes
+      responses:
+        "200":
+          description: List of quizzes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QuizSummary"
+    post:
+      operationId: createQuiz
+      tags: [quizzes]
+      summary: Create a new quiz
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizInput"
+      responses:
+        "201":
+          description: Created quiz
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quiz"
+
+  /quizzes/{id}:
+    get:
+      operationId: getQuiz
+      tags: [quizzes]
+      summary: Get quiz with questions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Quiz detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quiz"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateQuiz
+      tags: [quizzes]
+      summary: Update quiz
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizInput"
+      responses:
+        "200":
+          description: Updated quiz
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quiz"
+    delete:
+      operationId: deleteQuiz
+      tags: [quizzes]
+      summary: Delete quiz
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /quizzes/code/{code}:
+    get:
+      operationId: getQuizByCode
+      tags: [quizzes]
+      summary: Get quiz by share code (student access)
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Quiz for student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quiz"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /quizzes/{id}/submissions:
+    get:
+      operationId: getQuizSubmissions
+      tags: [submissions]
+      summary: Get all submissions for a quiz
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Submissions grouped by student
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Submission"
+    delete:
+      operationId: deleteQuizSubmissions
+      tags: [submissions]
+      summary: Delete selected or all submissions for a quiz
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteSubmissionsInput"
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /submissions:
+    post:
+      operationId: submitQuiz
+      tags: [submissions]
+      summary: Student submits quiz answers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmissionInput"
+      responses:
+        "201":
+          description: Submission created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResult"
+
+  /submissions/{id}/answers/{answerId}/grade:
+    patch:
+      operationId: gradeAnswer
+      tags: [submissions]
+      summary: Teacher grades an essay answer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: answerId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GradeInput"
+      responses:
+        "200":
+          description: Graded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get teacher dashboard stats
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required: [success]
+
+    Teacher:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+      required: [id, email, name, createdAt]
+
+    TeacherRegisterInput:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        name:
+          type: string
+      required: [email, password, name]
+
+    TeacherLoginInput:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required: [email, password]
+
+    QuizOption:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        order:
+          type: integer
+      required: [id, text, order]
+
+    QuizOptionInput:
+      type: object
+      properties:
+        text:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+      required: [text]
+
+    QuizQuestion:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [multiple, essay]
+        questionText:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        points:
+          type: integer
+        correctAnswerIndex:
+          type: ["integer", "null"]
+        modelAnswer:
+          type: ["string", "null"]
+        timeLimitSeconds:
+          type: ["integer", "null"]
+        order:
+          type: integer
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizOption"
+      required: [id, type, questionText, points, order, options]
+
+    QuizQuestionInput:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [multiple, essay]
+        questionText:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        points:
+          type: integer
+        correctAnswerIndex:
+          type: ["integer", "null"]
+        modelAnswer:
+          type: ["string", "null"]
+        timeLimitSeconds:
+          type: ["integer", "null"]
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizOptionInput"
+      required: [type, questionText, points]
+
+    Quiz:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        timeLimitMinutes:
+          type: integer
+        shareCode:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizQuestion"
+      required: [id, title, timeLimitMinutes, shareCode, createdAt, questions]
+
+    QuizSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        timeLimitMinutes:
+          type: integer
+        shareCode:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        questionCount:
+          type: integer
+        submissionCount:
+          type: integer
+        pendingCount:
+          type: integer
+        createdAt:
+          type: string
+      required: [id, title, timeLimitMinutes, shareCode, questionCount, submissionCount, pendingCount, createdAt]
+
+    QuizInput:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        timeLimitMinutes:
+          type: integer
+        imageUrl:
+          type: ["string", "null"]
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizQuestionInput"
+      required: [title, timeLimitMinutes, questions]
+
+    AnswerDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        questionId:
+          type: integer
+        questionText:
+          type: string
+        questionType:
+          type: string
+        answerText:
+          type: ["string", "null"]
+        answerIndex:
+          type: ["integer", "null"]
+        isCorrect:
+          type: ["boolean", "null"]
+        grade:
+          type: ["integer", "null"]
+        status:
+          type: string
+          enum: [auto, pending, graded]
+        modelAnswer:
+          type: ["string", "null"]
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizOption"
+      required: [id, questionId, questionText, questionType, status]
+
+    Submission:
+      type: object
+      properties:
+        id:
+          type: integer
+        quizId:
+          type: integer
+        quizTitle:
+          type: string
+        studentName:
+          type: string
+        score:
+          type: ["integer", "null"]
+        earnedPoints:
+          type: integer
+        totalPoints:
+          type: integer
+        completedAt:
+          type: string
+        hasPending:
+          type: boolean
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnswerDetail"
+      required: [id, quizId, quizTitle, studentName, earnedPoints, totalPoints, completedAt, hasPending]
+
+    AnswerInput:
+      type: object
+      properties:
+        questionId:
+          type: integer
+        answerText:
+          type: ["string", "null"]
+        answerIndex:
+          type: ["integer", "null"]
+      required: [questionId]
+
+    SubmissionInput:
+      type: object
+      properties:
+        quizId:
+          type: integer
+        studentName:
+          type: string
+        timeSpentSeconds:
+          type: integer
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnswerInput"
+      required: [quizId, studentName, timeSpentSeconds, answers]
+
+    SubmissionResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        score:
+          type: ["integer", "null"]
+        earnedPoints:
+          type: integer
+        totalPoints:
+          type: integer
+        hasPending:
+          type: boolean
+      required: [id, earnedPoints, totalPoints, hasPending]
+
+    GradeInput:
+      type: object
+      properties:
+        grade:
+          type: integer
+          minimum: 0
+          maximum: 100
+      required: [grade]
+
+    DeleteSubmissionsInput:
+      type: object
+      properties:
+        submissionIds:
+          type: array
+          items:
+            type: integer
+        deleteAll:
+          type: boolean
+      required: []
+
+    DashboardStats:
+      type: object
+      properties:
+        totalQuizzes:
+          type: integer
+        totalStudents:
+          type: integer
+        averageScore:
+          type: integer
+        pendingCount:
+          type: integer
+      required: [totalQuizzes, totalStudents, averageScore, pendingCount]
+
+    UploadResponse:
+      type: object
+      properties:
+        url:
+          type: string
+      required: [url]

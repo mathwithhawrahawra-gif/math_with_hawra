@@ -1,0 +1,19 @@
+kind = "design-system"
+previewPath = "/math-hawra-ds/"
+title = "Math With Hawra Design System"
+description = "A reusable Arabic RTL design system extracted from Math With Hawra, covering its cheerful pink-and-yellow educational visual language, typography, surfaces, status colors, and core interaction patterns for teacher and student experiences."
+version = "1.0.0"
+id = "artifacts/math-hawra-ds"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/math-hawra-ds/" ]
+localPort = 22866
+
+[services.development]
+run = "pnpm --filter @workspace/math-hawra-ds run dev"
+
+[services.env]
+PORT = "22866"
+BASE_PATH = "/math-hawra-ds/"
